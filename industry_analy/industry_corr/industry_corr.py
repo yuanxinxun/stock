@@ -20,7 +20,7 @@ for data in code_namelist:
 #获取数据字典，key为代码，值为日期序列df
 industry_dict=stock_basic.get_datadict(code_namedict.keys(),'D:\python_project\source_data\industrydata',usecols=[0,2],columns=['close'])
 Index_df=pd.read_csv('D:\python_project\\source_data\\Indexdata\\399006.SZ.csv',parse_dates=[0],index_col=0,usecols=[0,2],header=None)
-for key in industry_dict.keys():
+for key in industry_dict.keys():#设置列名为行业代码
     industry_dict[key].columns=[key]
 close_df=pd.concat([industry_dict[key] for key in industry_dict.keys()],axis=1)
 close_df['399006.SZ']=Index_df[2][(Index_df.index>=min(close_df.index))&(Index_df.index<=max(close_df.index))].values
