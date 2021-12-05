@@ -4,6 +4,7 @@ import logging
 import time
 import csv
 import os
+# usedf=True以后有空改成直接生成df
 
 maincwd=os.getcwd()
 os.chdir(os.path.split(os.path.realpath(__file__))[0])
@@ -59,7 +60,7 @@ def remove_file_notin_daylist(path,daylist,filename_len=12):#删除日期列表�
 w.start() # 默认命令超时时间为120秒，如需设置超时时间可以加入waitTime参数，例如waitTime=60,即设置命令超时时间为60秒  
 log("WIND isconnect：%s"%w.isconnected())
 today=(datetime.datetime.now()-datetime.timedelta(hours=21)).strftime("%Y%m%d")#日期字符串格式统一为20200202,21点前获得的数据可能不全
-lasttday=w.tdaysoffset(0, today, "").Times[0].strftime("%Y%m%d")
+lasttday=w.tdaysoffset(0, today, "").Times[0].strftime("%Y%m%d")#最近的交易日
 
 #所需的各个模块的代码列表
 Indexcode_list=["000001.SH","000688.SH","000300.SH","000852.SH","000905.SH","399100.SZ","399102.SZ","399001.SZ","399006.SZ","399673.SZ"]#获取指数代码列表
