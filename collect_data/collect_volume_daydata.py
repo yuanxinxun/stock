@@ -13,34 +13,12 @@ logging.basicConfig(level=logging.INFO)
 def log(info,level=logging.INFO):
     logging.log(level,time.strftime("%Y-%m-%d %H:%M:%S   ", time.localtime())+info)
 
-def get_stock_datalist(WindPydata,first_columnlist,ifprint=False):#输出股票信息【代码，成交量，收盘价】
-    data=WindPydata
-    stock_datalist=[]
-    if data.ErrorCode!=0:
-        log(u"获取数据失败，错误代码：%s 错误内容：%s" %(data.ErrorCode,data.Data))
-        return stock_datalist;
-    datalen=len(data.Data)#每个股票的信息数量
-    rangelen=range(datalen)
-    for index,first_column in enumerate(first_columnlist):
-        if first_column==None:
-            continue
-        stock_datalist_alone=[first_column]#每行信息的第一列
-        for i in rangelen:#data.Data下每一行
-            stock_datalist_alone.append(data.Data[i][index])
-        stock_datalist.append(stock_datalist_alone)
-    if ifprint:
-        bianli(stock_datalist)
-    return stock_datalist;
-
-def writelist(L,filepath,Lhead=[]):
-    if len(L)==0:
-        return
-    with open(filepath,'w') as file:
-        writer = csv.writer(file)
-        if len(Lhead)>0:
-            writer.writerow(Lhead)
-        for member in L:
-            writer.writerow(member)
+def write_winddf(data,filepath):
+    if data[0]==0:
+        data[1].to_csv(filepath)
+        log(filepath+'datalen:%d'%len(data[1]))
+    else:
+        log("%dError Message:"%data[0]+ data[1].iloc[0, 0])
 
 def bianli(L):
     log(u"数组长度%d"%len(L))
@@ -68,10 +46,10 @@ industrycode_list=w.wset("sectorconstituent","date=%s;sectorid=a39901011i000000;
 stockcode_list=w.wset("sectorconstituent","date=%s;sectorid=a001010100000000;field=wind_code"%today).Data[0]#获取股票代码列表
 
 #获取指数，板块代码-名称字段对
-Indexcode_name_data=w.wss(Indexcode_list, "sec_name","ShowBlank=NAN")#获取指数代码，名称
-writelist(get_stock_datalist(Indexcode_name_data,Indexcode_name_data.Codes,False),"../../source_data/code_name/Indexcode_name_list.csv")
-industrycode_name_data=w.wss(industrycode_list, "sec_name","ShowBlank=NAN")#获取行业代码，名称
-writelist(get_stock_datalist(industrycode_name_data,industrycode_name_data.Codes,False),"../../source_data/code_name/industrycode_name_list.csv")
+Indexcode_name_data=w.wss(Indexcode_list, "sec_name","ShowBlank=NAN",usedf=True)#获取指数代码，名称
+write_winddf(Indexcode_name_data,"../../source_data/code_name/Indexcode_name_list.csv")
+industrycode_name_data=w.wss(industrycode_list, "sec_name","ShowBlank=NAN",usedf=True)#获取行业代码，名称
+write_winddf(industrycode_name_data,"../../source_data/code_name/industrycode_name_list.csv")
 #获取股票所有需要的相关信息
 #sec_name 证券名称
 #pct_chg  涨幅
@@ -83,8 +61,8 @@ writelist(get_stock_datalist(industrycode_name_data,industrycode_name_data.Codes
 #val_pe_deducted_ttm  市盈率ttm
 #province  省份
 #city  城市
-code_name_data=w.wss(stockcode_list, "sec_name,pct_chg,amt,close,ipo_date,concept,mkt_cap_ard,val_pe_deducted_ttm,province,city","tradeDate=%s;ShowBlank=NAN;industryStandard=3"%lasttday)
-writelist(get_stock_datalist(code_name_data,code_name_data.Codes,False),"../../source_data/code_name/code_name_list.csv")
+code_name_data=w.wss(stockcode_list, "sec_name,pct_chg,amt,close,ipo_date,concept,mkt_cap_ard,val_pe_deducted_ttm,province,city","tradeDate=%s;ShowBlank=NAN;industryStandard=3"%lasttday,usedf=True)
+write_winddf(code_name_data,"../../source_data/code_name/code_name_list.csv")
 
 #生成最近daylistlenth个交易日的数组
 daylistlenth=360
@@ -99,9 +77,8 @@ daylist.sort(reverse = True)
 log("Index begin")
 path="../../source_data/Indexdata"
 for code in Indexcode_list:
-    stock_data=w.wsd(code, "amt,close,", min(daylist), max(daylist), "ShowBlank=nan;PriceAdj=F")#成交额，收盘价
-    stock_datalist=get_stock_datalist(stock_data,stock_data.Times)
-    writelist(stock_datalist,"%s/%s.csv"%(path,code))
+    stock_data=w.wsd(code, "amt,close,", min(daylist), max(daylist), "ShowBlank=nan;PriceAdj=F",usedf=True)#成交额，收盘价
+    write_winddf(stock_data,"%s/%s.csv"%(path,code))
 
 #从万得获取行业信息
 log("industry begin")
@@ -111,9 +88,8 @@ dirlist=os.listdir(path)
 for day in daylist:    
     if day+".csv" in dirlist:
         continue    
-    stock_data=w.wss(industrycode_list, "amt,close","tradeDate=%s;cycle=D;priceAdj=F;ShowBlank=nan"%day)#成交额，收盘价
-    stock_datalist=get_stock_datalist(stock_data,stock_data.Codes)
-    writelist(stock_datalist,"%s/%s.csv"%(path,day))
+    stock_data=w.wss(industrycode_list, "amt,close,volume,free_turn_n,turn","tradeDate=%s;cycle=D;priceAdj=F;ShowBlank=nan"%day,usedf=True)#成交额，收盘价
+    write_winddf(stock_data,"%s/%s.csv"%(path,day))
 
 #从万得获取股票信息
 log("stock begin")
@@ -123,9 +99,8 @@ dirlist=os.listdir(path)
 for day in daylist:    
     if day+".csv" in dirlist:
         continue    
-    stock_data=w.wss(stockcode_list, "amt,close,pct_chg,mkt_cap_ard","tradeDate=%s;cycle=D;priceAdj=B;ShowBlank=nan"%day)#成交额，收盘价,涨幅，市值(这里用后复权方便回测，计算)
-    stock_datalist=get_stock_datalist(stock_data,stock_data.Codes)
-    writelist(stock_datalist,"%s/%s.csv"%(path,day))
+    stock_data=w.wss(stockcode_list, "amt,close,pct_chg,mkt_cap_ard","tradeDate=%s;cycle=D;priceAdj=B;ShowBlank=nan"%day,usedf=True)#成交额，收盘价,涨幅，市值(这里用后复权方便回测，计算)
+    write_winddf(stock_data,"%s/%s.csv"%(path,day))
 
 
 w.stop()

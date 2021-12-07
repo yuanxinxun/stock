@@ -37,6 +37,7 @@ print("输入整数或负数，显示前几行或最后几行结果")
 print("输入q，退出")
 while True:
     inputstr=input("Enter your input: ") 
+    if len(inputstr)==0:inputstr='abcdefg'
     if inputstr=="q":
         break
     if is_notrun_slope or inputstr[0]=="r":
