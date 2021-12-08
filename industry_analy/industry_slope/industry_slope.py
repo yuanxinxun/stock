@@ -14,11 +14,11 @@ log=stock_basic.log
 
 datalen=90
 
-industry_code_namedict=stock_basic.get_code_namedict(stock_basic.INDASTRY)
-stock_code_namedict=stock_basic.get_code_namedict(stock_basic.STOCK)
+industry_code_namedf=stock_basic.get_code_namedf(stock_basic.INDASTRY)
+stock_code_namedf=stock_basic.get_code_namedf(stock_basic.STOCK)
 #获取数据字典，key为代码，值为日期序列df
-industry_dict=stock_basic.get_datadict(industry_code_namedict.keys(),'D:\python_project\source_data\industrydata',userows=datalen,columns=['amt','close'])
-stock_dict=stock_basic.get_datadict(stock_code_namedict.keys(),'D:\python_project\source_data\data',userows=datalen,usecols=[0,2])
+industry_dict=stock_basic.get_datadict(industry_code_namedf.index,'D:\python_project\source_data\industrydata',header=0,userows=datalen,usecols=[0,1,2])
+stock_dict=stock_basic.get_datadict(stock_code_namedf.index,'D:\python_project\source_data\data',header=0,userows=datalen,usecols=[0,2])
 for key in industry_dict.keys():
     industry_dict[key].columns=[key+'amt',key]
 industry_close_df=pd.concat([industry_dict[key][key] for key in industry_dict.keys()],axis=1)
@@ -48,7 +48,7 @@ while True:
             i=int(inputstr[1:])
         slope_df["slope"]=industry_close_df.apply(lambda y:stats.linregress(range(i),y[-i:]/y[-i])[0],axis=0).values
         slope_df.index=industry_close_df.columns
-        slope_df["name"]=[industry_code_namedict[code[0:9]] for code in slope_df.index]
+        slope_df["name"]=[industry_code_namedf[code,"SEC_NAME"] for code in slope_df.index]
         slope_df=slope_df.sort_values(by=["slope"],ascending=False)
         stock_slope_df=stock_close_df.apply(lambda y:stats.linregress(range(i),y[-i:]/y[-i])[0],axis=0)
         stock_slope_df.name="slope"
@@ -61,7 +61,7 @@ while True:
             log("结果小于0，请检查输入是否正确")
             continue
         #获取当前板块斜率排行
-        print("%s:%d/%d"%(industry_code_namedict[industry_code],slope_df.index.get_loc(industry_code)+1,len(slope_df)))
+        print("%s:%d/%d"%(industry_code_namedf[industry_code,'SEC_NAME'],slope_df.index.get_loc(industry_code)+1,len(slope_df)))
         winddf.set_index(["wind_code"], inplace=True)
         winddf=pd.concat([winddf,stock_slope_df],axis=1,join='inner')
         winddf=winddf.sort_values(by=["slope"],ascending=False)

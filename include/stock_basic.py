@@ -14,26 +14,21 @@ logging.basicConfig(level = logging.INFO,format = '%(asctime)s - %(levelname)s -
 def log(info,level=logging.INFO):
     logging.log(level,info)
 
-def get_code_namedict(data_tpye):
+def get_code_namedf(data_tpye):
     path = {STOCK:data_path,
               INDASTRY:industrydata_path,
-              INDEX:Indexdata_path}[data_tpye]
-    code_namedict={}
-    code_namelist = csv.reader(open(path,'r'))#类似文件指针，只能循环一次
-    for data in code_namelist:
-        if len(data)>=2:
-            code=data[0]
-            code_namedict[code]=data[1]
-    return code_namedict
-    log('readover dictlen%d'%len(code_namedict))
+              INDEX:Indexdata_path}
+    code_namedf = pd.read_csv(path[data_tpye],index_col=0,header=0)#类似文件指针，只能循环一次
+    return code_namedf
+    log('readover dictlen%d'%len(code_namedf))
 
 #给传入的字典填充数据(df.append()很慢，尽量少用)
-def get_datadict(keys,filepath,filldf=True,usecols=None,userows=9999999999,columns=None):
+def get_datadict(keys,filepath,filldf=True,usecols=None,header=None,userows=9999999999,columns=None):
     code_dict=dict.fromkeys(keys)
     filelist=os.listdir(filepath)
     filelist.sort(reverse=False)#按名称升序排列
     for file in filelist[-userows:]:
-        daydata=pd.read_csv(filepath+'/%s'%file,index_col=0,header=None,usecols=usecols,skip_blank_lines=True)
+        daydata=pd.read_csv(filepath+'/%s'%file,index_col=0,header=header,usecols=usecols,skip_blank_lines=True)
         log('read data '+file+' begin: datalen:%d'%len(daydata))
         for key in code_dict.keys():
             if (key in daydata.index)==False:
