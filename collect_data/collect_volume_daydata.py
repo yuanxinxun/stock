@@ -42,7 +42,7 @@ lasttday=w.tdaysoffset(0, today, "").Times[0].strftime("%Y%m%d")#最近的交易
 
 #所需的各个模块的代码列表
 Indexcode_list=["000001.SH","000688.SH","000300.SH","000852.SH","000905.SH","399100.SZ","399102.SZ","399001.SZ","399006.SZ","399673.SZ"]#获取指数代码列表
-industrycode_list=w.wset("sectorconstituent","date=%s;sectorid=a39901011i000000;field=wind_code"%today).Data[0]#获取行业代码列表
+industrycode_list=w.wset("sectorconstituent","date=%s;sectorid=a39901012g000000;field=wind_code"%today).Data[0]#获取行业代码列表
 stockcode_list=w.wset("sectorconstituent","date=%s;sectorid=a001010100000000;field=wind_code"%today).Data[0]#获取股票代码列表
 
 #获取指数，板块代码-名称字段对

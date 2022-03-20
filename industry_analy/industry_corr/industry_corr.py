@@ -9,29 +9,32 @@ import stock_basic
 maincwd=os.getcwd()
 os.chdir(os.path.split(os.path.realpath(__file__))[0])
 log=stock_basic.log
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', 10)
+pd.set_option('display.width',1000)
 
-code_namedict={}
-code_namelist = csv.reader(open('D:\python_project\source_data\code_name\industrycode_name_list.csv','r'))#类似文件指针，只能循环一次
-for data in code_namelist:
-    if len(data)>=2:
-        code=data[0]
-        code_namedict[code]=data[1]
+industry_code_namedf=stock_basic.get_code_namedf(stock_basic.INDASTRY)
+Index_code='399006.SZ'
 
 #获取数据字典，key为代码，值为日期序列df
-industry_dict=stock_basic.get_datadict(code_namedict.keys(),'D:\python_project\source_data\industrydata',usecols=[0,2],columns=['close'])
-Index_df=pd.read_csv('D:\python_project\\source_data\\Indexdata\\399006.SZ.csv',parse_dates=[0],index_col=0,usecols=[0,2],header=None)
+industry_dict=stock_basic.get_datadict(industry_code_namedf.index,'D:\python_project\source_data\industrydata',usecols=[0,2],columns=['close'],header=0)#带header等于0保证数据格式为float
+Index_df=pd.read_csv('D:\python_project\\source_data\\Indexdata\\399006.SZ.csv',parse_dates=[0],index_col=0,usecols=[0,2],header=0)
 for key in industry_dict.keys():#设置列名为行业代码
     industry_dict[key].columns=[key]
 close_df=pd.concat([industry_dict[key] for key in industry_dict.keys()],axis=1)
-close_df['399006.SZ']=Index_df[2][(Index_df.index>=min(close_df.index))&(Index_df.index<=max(close_df.index))].values
+close_df[Index_code]=Index_df['CLOSE'][(Index_df.index>=min(close_df.index))&(Index_df.index<=max(close_df.index))].values
 corr_df=close_df.corr()
-corr_df_60=close_df[-60:].corr()
+corr_df_near=close_df[-30:].corr()
+close_df_T=close_df.T
+increase_rank_far=(close_df_T.iloc[:,-1]/close_df_T.iloc[:,-31]).rank(ascending=False)#30日涨幅排名
+increase_rank_mid=(close_df_T.iloc[:,-1]/close_df_T.iloc[:,-11]).rank(ascending=False)#10日涨幅排名
+increase_rank_near=(close_df_T.iloc[:,-1]/close_df_T.iloc[:,-4]).rank(ascending=False)#3日涨幅排名
 
-Index_corr_df=corr_df.loc[:,['399006.SZ']]
-Index_corr_df['Index_60']=corr_df_60['399006.SZ']
-Index_corr_df['difference']=Index_corr_df['Index_60']-Index_corr_df['399006.SZ']
-Index_corr_df['difference_abs']=abs(Index_corr_df['difference'])
-Index_corr_df['name']=[(code_namedict[code] if code in code_namedict.keys() else code) for code in Index_corr_df.index]
-sort_df_bydiff=Index_corr_df.sort_values(by='difference',ascending=False)
-sort_df_byindex=Index_corr_df.sort_values(by='399006.SZ',ascending=False)
-sort_df_byIndex60=Index_corr_df.sort_values(by='Index_60',ascending=False)
+Index_corr_df=corr_df.loc[:,[Index_code]]
+Index_corr_df['corr_df_near']=corr_df_near[Index_code]
+Index_corr_df['difference_abs']=Index_corr_df['corr_df_near']-Index_corr_df[Index_code]
+Index_corr_df['name']=[(industry_code_namedf.loc[code].values[0] if code in industry_code_namedf.index else code) for code in Index_corr_df.index]
+Index_corr_df['IRfar']=increase_rank_far
+Index_corr_df['IRmid']=increase_rank_mid
+Index_corr_df['IRnear']=increase_rank_near
+sort_df_bydiff=Index_corr_df.sort_values(by='difference_abs',ascending=False)

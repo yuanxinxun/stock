@@ -55,7 +55,7 @@ while True:
     if inputstr[0]=="r":#为了is_notrun_slope=True的时候也能正常执行，保持程序丝滑
         pass
     elif len(inputstr)==6:
-        industry_code=inputstr+".SI"
+        industry_code=inputstr+".WI"
         errcode,winddf=w.wset("sectorconstituent",windcode=industry_code,usedf=True)
         if len(winddf)==0:
             log("结果小于0，请检查输入是否正确")
