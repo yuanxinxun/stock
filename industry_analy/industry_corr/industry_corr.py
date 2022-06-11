@@ -28,7 +28,7 @@ corr_df_near=close_df[-30:].corr()
 close_df_T=close_df.T
 increase_rank_far=(close_df_T.iloc[:,-1]/close_df_T.iloc[:,-91]).rank(ascending=False)#涨幅排名
 increase_rank_mid=(close_df_T.iloc[:,-1]/close_df_T.iloc[:,-31]).rank(ascending=False)
-increase_rank_near=(close_df_T.iloc[:,-1]/close_df_T.iloc[:,-4]).rank(ascending=False)
+increase_rank_near=(close_df_T.iloc[:,-1]/close_df_T.iloc[:,-6]).rank(ascending=False)
 
 Index_corr_df=corr_df.loc[:,[Index_code]]
 Index_corr_df['corr_df_near']=corr_df_near[Index_code]
@@ -39,5 +39,5 @@ Index_corr_df['IRmid']=increase_rank_mid
 Index_corr_df['IRnear']=increase_rank_near
 sort_df_bydiff=Index_corr_df.sort_values(by='difference_abs',ascending=False)
 sort_df_bynear=Index_corr_df.sort_values(by='IRnear')
-print(sort_df_bynear)
+print(sort_df_bydiff)
 
