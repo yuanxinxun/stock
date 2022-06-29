@@ -8,10 +8,6 @@ import numpy as np
 import pandas as pd
 import stock_basic
 
-maincwd=os.getcwd()
-os.chdir(os.path.split(os.path.realpath(__file__))[0])
-log=stock_basic.log
-
 def get_result_by_threshold(datadict,column_name,threshold):
     list_by_threshold=[]
     amt=0
@@ -25,14 +21,15 @@ def get_result_by_threshold(datadict,column_name,threshold):
             log(str(e))
     return list_by_threshold
 
-
+maincwd=os.getcwd()
+os.chdir(os.path.split(os.path.realpath(__file__))[0])
+log=stock_basic.log
 #日期字符串格式统一为20200202
 today=datetime.datetime.now().strftime('%Y%m%d')
 #获得股票代码-名称列表
 code_namedict={}
 code_activelist=[]
-active_threshold=30000000
-code_namelist = csv.reader(open('D:\python_project\source_data\code_name\code_name_list.csv','r'))#类似文件指针，只能循环一次
+code_namelist = csv.reader(open('D:\python_project\source_data\code_name\code_name_list.csv','r',encoding='utf-8'))#类似文件指针，只能循环一次
 for data in code_namelist:
     if len(data)>2:
         code=data[0]

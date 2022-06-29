@@ -72,10 +72,10 @@ zhuanzhaistr=",".join(zhuanzhaicodes.Data[0])
 wss_option="tradeDate=%s;cycle=D;ShowBlank=0"%today#空值填充0
 yijialv_data=w.wss(zhuanzhaistr, "underlyingcode,convpremiumratio,amt,underlyingname,clause_conversion_2_swapsharestartdate,clause_conversion2_bondlot,sec_name,close",wss_option)#0正股代码，1转股溢价率，2成交额，3正股名称，4转股日期，5未转股余额，6证券简称,7收盘价
 
-stockcodes=get_zhuanzhai_by_yijialv(yijialv_data,20,1,False)#第二个参数转股溢价率最大值，#第三个参数成交额最小值
+stockcodes=get_zhuanzhai_by_yijialv(yijialv_data,999999999,1,False)#第二个参数转股溢价率最大值，#第三个参数成交额最小值
 
 stock_df=pd.DataFrame(stockcodes,columns=['转股日期','未转股额','转债名称','正股名称','转股溢价','成交额','价格'])
-stock_df.sort_values(by='成交额',ascending=False)
+stock_df.sort_values(by='未转股额',ascending=False)
 stock_df.sort_values(by='转股溢价',ascending=True)
 
 w.stop()

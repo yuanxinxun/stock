@@ -1,3 +1,4 @@
+#utf-8
 #20210624更新读取数据的效率和通用性，生成了相关性系数矩阵
 import os
 import sys
@@ -12,7 +13,10 @@ maincwd=os.getcwd()
 os.chdir(os.path.split(os.path.realpath(__file__))[0])
 log=stock_basic.log
 
-datalen=90
+datalen=260
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', 10)
+pd.set_option('display.width',1000)
 
 industry_code_namedf=stock_basic.get_code_namedf(stock_basic.INDASTRY)
 stock_code_namedf=stock_basic.get_code_namedf(stock_basic.STOCK)
@@ -74,10 +78,14 @@ while True:
             print(slope_df[:show_len])
         else:
             print(slope_df[show_len:])
+    elif inputstr[0]=="C":
+        inputstr=inputstr[1:]
+        print(slope_df[slope_df['name'].str.contains(inputstr)])
     else:
         log("输入错误")
         print("输入r**计算**天长度的斜率")
         print("输入6位数数字，查看指数成分")
-        print("输入整数或负数，显示前几行或最后几行结果")
+        print("输入整数或负数，显示前几行或最后几行结果")       
+        print("C汉字，输出包含汉字的板块")
         print("输入q，退出")
 os.chdir(maincwd)
