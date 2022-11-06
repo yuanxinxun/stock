@@ -37,12 +37,12 @@ def remove_file_notin_daylist(path,daylist,filename_len=12):#删除日期列表�
 
 w.start() # 默认命令超时时间为120秒，如需设置超时时间可以加入waitTime参数，例如waitTime=60,即设置命令超时时间为60秒  
 log("WIND isconnect：%s"%w.isconnected())
-today=(datetime.datetime.now()-datetime.timedelta(hours=21)).strftime("%Y%m%d")#日期字符串格式统一为20200202,21点前获得的数据可能不全
+today=(datetime.datetime.now()-datetime.timedelta(hours=20)).strftime("%Y%m%d")#日期字符串格式统一为20200202,21点前获得的数据可能不全
 lasttday=w.tdaysoffset(0, today, "").Times[0].strftime("%Y%m%d")#最近的交易日
 
 #所需的各个模块的代码列表
 Indexcode_list=["000001.SH","000688.SH","000300.SH","000852.SH","000905.SH","399100.SZ","399102.SZ","399001.SZ","399006.SZ","399673.SZ"]#获取指数代码列表
-industrycode_list=w.wset("sectorconstituent","date=%s;sectorid=a39901012g000000;field=wind_code"%today).Data[0]#获取行业代码列表
+industrycode_list=w.wset("sectorconstituent","date=%s;sectorid=a39901012f000000;field=wind_code"%today).Data[0]#获取行业代码列表
 stockcode_list=w.wset("sectorconstituent","date=%s;sectorid=a001010100000000;field=wind_code"%today).Data[0]#获取股票代码列表
 
 #获取指数，板块代码-名称字段对
@@ -56,12 +56,13 @@ write_winddf(industrycode_name_data,"../../source_data/code_name/industrycode_na
 #amt  成交额
 #close  收盘价
 #ipo_date  上市日期
-#concept  概念板块
+#industry_citic  中信板块名称
+#indexcode_citic  中信板块代码
 #mkt_cap_ard  总市值
 #val_pe_deducted_ttm  市盈率ttm
 #province  省份
 #city  城市
-code_name_data=w.wss(stockcode_list, "sec_name,pct_chg,amt,close,ipo_date,concept,mkt_cap_ard,val_pe_deducted_ttm,province,city","tradeDate=%s;ShowBlank=NAN;industryStandard=3"%lasttday,usedf=True)
+code_name_data=w.wss(stockcode_list, "sec_name,pct_chg,amt,close,ipo_date,industry_citic,indexcode_citic,mkt_cap_ard,val_pe_deducted_ttm,province,city","tradeDate=%s;ShowBlank=NAN;industryType=2"%lasttday,usedf=True)
 write_winddf(code_name_data,"../../source_data/code_name/code_name_list.csv")
 
 #生成最近daylistlenth个交易日的数组
@@ -77,7 +78,7 @@ daylist.sort(reverse = True)
 log("Index begin")
 path="../../source_data/Indexdata"
 for code in Indexcode_list:
-    stock_data=w.wsd(code, "amt,close,", min(daylist), max(daylist), "ShowBlank=nan;PriceAdj=F",usedf=True)#成交额，收盘价
+    stock_data=w.wsd(code, "amt,close,,pct_chg", min(daylist), max(daylist), "ShowBlank=nan;PriceAdj=F",usedf=True)#成交额，收盘价
     write_winddf(stock_data,"%s/%s.csv"%(path,code))
 
 #从万得获取行业信息
